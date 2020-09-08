@@ -1,0 +1,198 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    
+    <meta charset="utf-8">
+    <title>components/LoginForm.js - Documentation</title>
+    
+    
+    <script src="scripts/prettify/prettify.js"></script>
+    <script src="scripts/prettify/lang-css.js"></script>
+    <!--[if lt IE 9]>
+      <script src="//html5shiv.googlecode.com/svn/trunk/html5.js"></script>
+    <![endif]-->
+    <link type="text/css" rel="stylesheet" href="styles/prettify.css">
+    <link type="text/css" rel="stylesheet" href="styles/jsdoc.css">
+    <script src="scripts/nav.js" defer></script>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+</head>
+<body>
+
+<input type="checkbox" id="nav-trigger" class="nav-trigger" />
+<label for="nav-trigger" class="navicon-button x">
+  <div class="navicon"></div>
+</label>
+
+<label for="nav-trigger" class="overlay"></label>
+
+<nav >
+    
+    <h2><a href="index.html">Home</a></h2><h3>Classes</h3><ul><li><a href="Actions.html">Actions</a><ul class='methods'><li data-type='method'><a href="Actions.html#Close">Close</a></li><li data-type='method'><a href="Actions.html#matches">matches</a></li><li data-type='method'><a href="Actions.html#Open">Open</a></li><li data-type='method'><a href="Actions.html#Reject">Reject</a></li><li data-type='method'><a href="Actions.html#ResumeBegin">ResumeBegin</a></li><li data-type='method'><a href="Actions.html#ResumeEnd">ResumeEnd</a></li></ul></li><li><a href="Gob.html">Gob</a><ul class='methods'><li data-type='method'><a href="Gob.html#SocketPlugin">SocketPlugin</a></li><li data-type='method'><a href="Gob.html#storeToProps">storeToProps</a></li></ul></li><li><a href="SocketPlugin.html">SocketPlugin</a></li></ul><h3>Namespaces</h3><ul><li><a href="ServerApi.html">ServerApi</a><ul class='methods'><li data-type='method'><a href="ServerApi.html#.Authenticate">Authenticate</a></li><li data-type='method'><a href="ServerApi.html#.Close">Close</a></li><li data-type='method'><a href="ServerApi.html#.Resume">Resume</a></li><li data-type='method'><a href="ServerApi.html#.SocketResume">SocketResume</a></li></ul></li></ul><h3>Tutorials</h3><ul><li><a href="tutorial-getting_started.html">Getting Started</a></li><li><a href="tutorial-server_api.html">Server API</a></li><li><a href="tutorial-understanding_gobs.html">Understanding Gobs</a></li></ul><h3>Global</h3><ul><li><a href="global.html#Reducer">Reducer</a></li><li><a href="global.html#ReducerState">ReducerState</a></li></ul>
+</nav>
+
+<div id="main">
+    
+    <h1 class="page-title">components/LoginForm.js</h1>
+    
+
+    
+
+
+
+    
+    <section>
+        <article>
+            <pre class="prettyprint source linenums"><code>import React from 'react';
+import PropTypes from 'prop-types';
+
+import { Button, Card, Grid, Icon, Text } from '@fantaptik/material';
+
+import { Local } from '../consts';
+import ServerApi from '../Server';
+
+import post from '../http/post';
+
+// TODO Document
+const Icons = {
+    Login : "camera",
+};
+
+// TODO props.rejected===true should have a special message: "An existing session was rejected; please login again."
+const LoginForm = ( { dispatch, gob, resuming, username : usernameProp="", password: passwordProp="", session, uriLogin, uriResume, user } ) => {
+    const [ username, updateUsername ] = React.useState( usernameProp );
+    const [ password, updatePassword ] = React.useState( passwordProp );
+    //
+    // Post handlers.
+    const postHandlers = {
+        //
+        // This handler is common between login and resume.
+        response : ( { data } ) => {
+            const { success, session, user } = data;
+            if( success ) {
+                dispatch &amp;&amp; dispatch( gob.Actions.Open( session, user, username ) );
+            }
+            return data;
+        },
+        //
+        // This handler is only for login action.
+        login : ( { success, session, user } ) => {
+            if( success &amp;&amp; Local ) {
+                // NB: Also set the `username` in storage otherwise other tabs won't know what it is
+                // and when those tabs return to guest the LoginForm won't have a username value preset.
+                gob.storage.set( Local.Login, { session, user, username } );
+                gob.storage.remove( Local.Login );
+            }
+        },
+    };
+    //
+    // Event handlers.
+    const handlers = {
+        login : () => {
+            post.login( uriLogin, ServerApi.Authenticate( username, password ) )
+                .then( postHandlers.response )
+                .then( postHandlers.login );
+        },
+        username : username => updateUsername( username ),
+        password : password => updatePassword( password ),
+    };
+    React.useEffect( () => {
+        // Register local storage handler; this browser tab can then tell others to authenticate.
+        return gob.storage.registerItem( Local.Login, event => {
+            if( event.created || event.modified ) {
+                const { session, user, username } = event.newValue;
+                dispatch &amp;&amp; dispatch( gob.Actions.Open( session, user, username ) );
+            }
+        } );
+    }, [] );
+    if( uriResume ) {
+        React.useEffect( () => {
+            // Try and resume the last session via cookie or other mechanism.
+            //
+            // Update store that we are attempting to resume.
+            dispatch &amp;&amp; dispatch( gob.Actions.ResumeBegin() );
+            //
+            // Attempt to resume via HTTP-POST.
+            post.resume( uriResume, ServerApi.Resume() )
+                .then( postHandlers.response )
+                .finally( () => {
+                    //
+                    // Success or fail we are not resuming anymore; update the store.
+                    dispatch &amp;&amp; dispatch( gob.Actions.ResumeEnd() );
+                } );
+        }, [] );
+    }
+
+    return (
+        &lt;Card show={session === "" &amp;&amp; user === null &amp;&amp; resuming !== true} className="login-form">
+            &lt;Card.Title>Login&lt;/Card.Title>
+            &lt;Grid auto={[12,6]}>
+                &lt;Text id={"username-" + gob.id} label="Username" required value={username} onChange={handlers.username} />
+                &lt;Text.Password id={"password-" + gob.id} label="Password" type="password" required value={password} onChange={handlers.password} />
+            &lt;/Grid>
+            &lt;Card.Actions className="center-align">
+                &lt;Button onClick={handlers.login}>
+                    &lt;Icon>{Icons.Login}&lt;/Icon>
+                    Login
+                &lt;/Button>
+            &lt;/Card.Actions>
+        &lt;/Card>
+    );
+}
+
+LoginForm.propTypes = {
+    /** The store dispatch function. */
+    dispatch : PropTypes.func,
+
+    /** The `Gob` instance we're tied to. */
+    gob : PropTypes.object,
+
+    /** Sets the password */
+    password : PropTypes.string,
+
+    /** true when an existing session was rejected */
+    rejected : PropTypes.bool,
+
+    /** true when session is resuming via HTTP-POST */
+    resuming : PropTypes.bool,
+
+    /** Sets the URI for login for HTTP-POST */
+    uriLogin : PropTypes.string.isRequired,
+
+    /** Sets the URI for resume-from-cookie for HTTP-POST.  When not set the resume attempt is not made. */
+    uriResume : PropTypes.string,
+
+    /** Sets the username */
+    username : PropTypes.string,
+
+    /** A `session` string received during authentication. */
+    session : PropTypes.string,
+
+    /** The user object from the store. */
+    user : PropTypes.object,
+}
+
+export default LoginForm;</code></pre>
+        </article>
+    </section>
+
+
+
+
+    
+    
+</div>
+
+<br class="clear">
+
+<footer>
+    Documentation generated by <a href="https://github.com/jsdoc3/jsdoc">JSDoc 3.6.5</a> on Tue Sep 08 2020 15:20:10 GMT-0700 (Pacific Daylight Time) using the <a href="https://github.com/clenemt/docdash">docdash</a> theme.
+</footer>
+
+<script>prettyPrint();</script>
+<script src="scripts/polyfill.js"></script>
+<script src="scripts/linenumber.js"></script>
+
+
+
+</body>
+</html>

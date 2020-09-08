@@ -1,0 +1,172 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    
+    <meta charset="utf-8">
+    <title>Tutorial: Server API - Documentation</title>
+    
+    
+    <script src="scripts/prettify/prettify.js"></script>
+    <script src="scripts/prettify/lang-css.js"></script>
+    <!--[if lt IE 9]>
+      <script src="//html5shiv.googlecode.com/svn/trunk/html5.js"></script>
+    <![endif]-->
+    <link type="text/css" rel="stylesheet" href="styles/prettify.css">
+    <link type="text/css" rel="stylesheet" href="styles/jsdoc.css">
+    <script src="scripts/nav.js" defer></script>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+</head>
+<body>
+
+<input type="checkbox" id="nav-trigger" class="nav-trigger" />
+<label for="nav-trigger" class="navicon-button x">
+  <div class="navicon"></div>
+</label>
+
+<label for="nav-trigger" class="overlay"></label>
+
+<nav >
+    
+    <h2><a href="index.html">Home</a></h2><h3>Classes</h3><ul><li><a href="Actions.html">Actions</a><ul class='methods'><li data-type='method'><a href="Actions.html#Close">Close</a></li><li data-type='method'><a href="Actions.html#matches">matches</a></li><li data-type='method'><a href="Actions.html#Open">Open</a></li><li data-type='method'><a href="Actions.html#Reject">Reject</a></li><li data-type='method'><a href="Actions.html#ResumeBegin">ResumeBegin</a></li><li data-type='method'><a href="Actions.html#ResumeEnd">ResumeEnd</a></li></ul></li><li><a href="Gob.html">Gob</a><ul class='methods'><li data-type='method'><a href="Gob.html#SocketPlugin">SocketPlugin</a></li><li data-type='method'><a href="Gob.html#storeToProps">storeToProps</a></li></ul></li><li><a href="SocketPlugin.html">SocketPlugin</a></li></ul><h3>Namespaces</h3><ul><li><a href="ServerApi.html">ServerApi</a><ul class='methods'><li data-type='method'><a href="ServerApi.html#.Authenticate">Authenticate</a></li><li data-type='method'><a href="ServerApi.html#.Close">Close</a></li><li data-type='method'><a href="ServerApi.html#.Resume">Resume</a></li><li data-type='method'><a href="ServerApi.html#.SocketResume">SocketResume</a></li></ul></li></ul><h3>Tutorials</h3><ul><li><a href="tutorial-getting_started.html">Getting Started</a></li><li><a href="tutorial-server_api.html">Server API</a></li><li><a href="tutorial-understanding_gobs.html">Understanding Gobs</a></li></ul><h3>Global</h3><ul><li><a href="global.html#Reducer">Reducer</a></li><li><a href="global.html#ReducerState">ReducerState</a></li></ul>
+</nav>
+
+<div id="main">
+    
+    <h1 class="page-title">Tutorial: Server API</h1>
+    
+
+    <section>
+
+<header>
+    
+
+    <h2>Server API</h2>
+</header>
+
+<article>
+    <p>This document outlines the contract between <code>@fantaptik/react-auth</code> and the <em>server</em>.</p>
+<h3>HTTP-POST</h3>
+<p><em>Authorization</em></p>
+<blockquote>
+<p>Attempts to open an authenticated session with the server.</p>
+<blockquote>
+<pre class="prettyprint source lang-js"><code>{
+   type          : &quot;fantaptik/react-auth/authenticate&quot;,
+   username      : &quot;username&quot;,
+   password      : &quot;password&quot;,
+}
+</code></pre>
+<p>Response</p>
+<blockquote>
+<p><code>session</code> and <code>user</code> are used by <code>SocketPlugin</code> to verify authentication during the <code>onconnect()</code> handler.<br>
+See <a href="global.html#ServerAuthenticateResponse">ServerAuthenticateResponse</a>.</p>
+<pre class="prettyprint source lang-js"><code>{
+    // true if authenticated; false otherwise
+    success     : false,
+    // Unique session identifier.
+    session     : &quot;&quot;,
+    // A non-null user object opaque to this package.
+    user        : {},
+}
+</code></pre>
+</blockquote>
+</blockquote>
+</blockquote>
+<p><em>Session Resume</em></p>
+<blockquote>
+<p>Attempts to resume an authenticated session with the server; server can use data from a cookie to validate.</p>
+<blockquote>
+<pre class="prettyprint source lang-js"><code>{
+   type          : &quot;fantaptik/react-auth/resume&quot;,
+}
+</code></pre>
+<p>Response</p>
+<blockquote>
+<p>Same as <em>Authorization</em>; see above or <a href="global.html#ServerAuthenticateResponse">ServerAuthenticateResponse</a>.</p>
+</blockquote>
+</blockquote>
+</blockquote>
+<h3>SOCKET</h3>
+<p><em>Socket Resume</em></p>
+<blockquote>
+<p>When the Redux store becomes <em>authenticated</em> the socket will connect and send this message to verify itself with the server.  If this step fails the socket is stopped and the store returns to <em>guest</em>.</p>
+<blockquote>
+<blockquote>
+<p><code>session</code> and <code>user</code> are the values received during <code>Authorization</code> or <code>Session Resume</code>.</p>
+<pre class="prettyprint source lang-js"><code>{
+   type          : &quot;fantaptik/react-auth/socket/resume&quot;,
+   session       : &quot;&quot;,
+   user          : {},
+}
+</code></pre>
+</blockquote>
+<p>Response</p>
+<blockquote>
+<p>See <a href="global.html#ServerResultResponse">ServerResultResponse</a>.</p>
+<pre class="prettyprint source lang-js"><code>{
+    // true if successful; false otherwise
+    success     : false,
+}
+</code></pre>
+</blockquote>
+</blockquote>
+</blockquote>
+<p><em>Session End</em></p>
+<blockquote>
+<p>When <code>SocketPlugin</code>.<code>logout()</code> is called this message is sent to the server.  If the server responds with a
+successful message the Redux store is returned to <em>guest</em>.</p>
+<blockquote>
+<blockquote>
+<p><code>session</code> and <code>user</code> are the values received during <code>Authorization</code> or <code>Session Resume</code>.</p>
+<pre class="prettyprint source lang-js"><code>{
+   type          : &quot;fantaptik/react-auth/close&quot;,
+   session       : &quot;&quot;,
+   user          : {},
+}
+</code></pre>
+</blockquote>
+<p>Response</p>
+<blockquote>
+<p>See <a href="global.html#ServerResultResponse">ServerResultResponse</a>.</p>
+<pre class="prettyprint source lang-js"><code>{
+    // true if successful; false otherwise
+    success     : false,
+}
+</code></pre>
+</blockquote>
+</blockquote>
+</blockquote>
+<p><em>Notify Session End</em></p>
+<blockquote>
+<p>The server can send this message to notify <code>SocketPlugin</code> that the session is over and the store should return to <em>guest</em>.</p>
+<blockquote>
+<blockquote>
+<pre class="prettyprint source lang-js"><code>{
+   type          : &quot;fantaptik/react-auth/close&quot;,
+}
+</code></pre>
+</blockquote>
+</blockquote>
+</blockquote>
+</article>
+
+</section>
+
+    
+    
+</div>
+
+<br class="clear">
+
+<footer>
+    Documentation generated by <a href="https://github.com/jsdoc3/jsdoc">JSDoc 3.6.5</a> on Tue Sep 08 2020 15:20:10 GMT-0700 (Pacific Daylight Time) using the <a href="https://github.com/clenemt/docdash">docdash</a> theme.
+</footer>
+
+<script>prettyPrint();</script>
+<script src="scripts/polyfill.js"></script>
+<script src="scripts/linenumber.js"></script>
+
+
+
+</body>
+</html>

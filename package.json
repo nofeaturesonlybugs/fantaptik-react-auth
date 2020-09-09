@@ -27,7 +27,7 @@
     "@babel/plugin-proposal-class-properties": "^7.10.4",
     "@babel/preset-env": "^7.11.5",
     "@babel/preset-react": "^7.10.4",
-    "@fantaptik/webpack-config": "^0.1.0",
+    "@fantaptik/webpack-config": "^0.2.0",
     "axios": "^0.20.0",
     "babel-loader": "^8.1.0",
     "clean-webpack-plugin": "^3.0.0",

@@ -1,7 +1,7 @@
 import React from 'react';
 import PropTypes from 'prop-types';
 
-import { Button, Card, Grid, Icon, Text } from '@fantaptik/material';
+import { Button, Card, Grid, Icon, Text } from '@fantaptik/react-material';
 
 import { Local } from '../consts';
 import ServerApi from '../Server';

@@ -36,8 +36,6 @@ import { Socket } from '@fantaptik/socket';
 // `SocketPlugin` is aliased to avoid name collision with other plugins you may be using.
 import { SocketPlugin as AuthSocketPlugin } from '@fantaptik/react-auth';
 
-import store from './store';
-
 // Create an instance of the SocketPlugin.
 // Export the instance to provide access to the logout() method and React components.
 export const Auth = new AuthSocketPlugin();

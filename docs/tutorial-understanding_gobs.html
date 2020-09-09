@@ -44,8 +44,155 @@
 </header>
 
 <article>
-    <h3>Life Without <code>Gob</code>s</h3>
-<p>TODO Fill me in.</p>
+    <h3>The Simple Case</h3>
+<p>The primary purpose of this package is to simplify authentication and create authenticated socket connections to a
+server.  When you create an instance of <code>SocketPlugin</code> and attach it to a <code>Socket</code> then that <code>Socket</code> will connect,
+authenticate, and close itself depending on the changing Redux state.  If you create multiple such <code>Socket</code> instances
+(each with its own instance of <code>SocketPlugin</code>) then they will all connect, authenticate, and close themselves as
+the Redux state changes.</p>
+<p>If your application is only authenticating with a single server then there's nothing extra you need to do with
+<code>Gob</code>s -- your case is the simple case where all sockets communicate with a single server.</p>
+<h3>The Complicated Case</h3>
+<p>The complicated case occurs when you want to create multiple authorized socket connections to different servers.
+It would be undesirable for sockets pointed at <em>ServerA</em> to connect or disconnect due to session changes for
+<em>ServerB</em>.  This is where <code>Gob</code>s enter the story -- they effectively namespace or slice their behavior to
+a subsection of the Redux state.</p>
+<h3>The __global__ Gob</h3>
+<p>The simple truth is there is always an active <code>Gob</code> with the namespace <em>&quot;__global__&quot;</em>.</p>
+<p>The following exports from this package are all tied to the global <code>Gob</code>:</p>
+<ul>
+<li>Actions</li>
+<li>Reducer</li>
+<li>SocketPlugin</li>
+<li>Components</li>
+</ul>
+<h3>A <code>Gob</code> Example</h3>
+<p><strong>Remember that you do not need to create or use instances of <code>Gob</code> if your application authenticates with a single server!</strong></p>
+<blockquote>
+<h4>Create the Gob.</h4>
+<p>Create a file for the <code>Gob</code>; we'll call it <code>secondService.js</code>.</p>
+<pre class="prettyprint source lang-js"><code>import { Gob } from '@fantaptik/react-auth';
+const instance = new Gob( &quot;second-service&quot; ); // NB:  Do not create any other Gobs from this package with this name!
+export const Actions          = instance.Actions;
+export const Reducer          = instance.Reducer;
+export const SocketPlugin     = instance.SocketPlugin;
+export const Components       = instance.React;
+export default instance;
+</code></pre>
+</blockquote>
+<blockquote>
+<h4>Creating the Redux Reducer.</h4>
+<p>In your application's <code>reducer.js</code> or other file:</p>
+<pre class="prettyprint source lang-js"><code>import { combineReducers } from 'redux';
+
+// Import and alias the reducer.
+import { Reducer as auth } from '@fantaptik/react-auth';          // Reducer for __global__ Gob.
+import { Reducer as secondService } from './secondService.js';    // Reducer for second-service Gob.
+
+// NB Import application specific reducers or other reducers.
+
+const reducer = combineReducers( { auth, secondService } ); // NB Include other reducers.
+
+export default reducer;
+</code></pre>
+<p>Your reducers do not need to be at the top-level of your Redux state -- you can nest them further down
+and the <code>Gob</code>s will locate them when necessary:</p>
+<pre class="prettyprint source lang-js"><code>import { combineReducers } from 'redux';
+
+// Import and alias the reducer.
+import { Reducer as auth } from '@fantaptik/react-auth';          // Reducer for __global__ Gob.
+import { Reducer as secondService } from './secondService.js';    // Reducer for second-service Gob.
+
+// NB Import application specific reducers or other reducers.
+const auths = combineReducers( { auth, secondService } );
+const reducer = combineReducers( { auths } ); // NB Include other reducers.
+
+export default reducer;
+</code></pre>
+</blockquote>
+<blockquote>
+<h4>Creating the Redux Store.</h4>
+<p>In your application's <code>store.js</code> or other file:</p>
+<pre class="prettyprint source lang-js"><code>import { createStore } from 'redux';
+
+import reducer from './reducer';
+
+const store = createStore( reducer );
+
+export default store;
+</code></pre>
+</blockquote>
+<blockquote>
+<h4>Creating the Socket.</h4>
+<p>In your application's <code>socket.js</code> or other file:</p>
+<pre class="prettyprint source lang-js"><code>import { Socket } from '@fantaptik/socket';
+
+import { SocketPlugin as AuthSocketPlugin } from '@fantaptik/react-auth';
+import { SocketPlugin as SecondAuthSocketPlugin } from './secondService.js';
+
+export const Auth = new AuthSocketPlugin();               // __global__ Gob
+const socketOptions = {                                   // __global__ Gob
+    // NB See `@fantaptik/socket` for other options.      // __global__ Gob
+    plugins : [                                           // __global__ Gob
+        // NB Other plugins as needed...                  // __global__ Gob
+        Auth,                                             // __global__ Gob
+    ],                                                    // __global__ Gob
+};                                                        // __global__ Gob
+export const connection = new Socket( socketOptions );    // __global__ Gob
+
+export const SecondAuth = new SecondAuthSocketPlugin();   // second-service Gob
+const secondOptions = {                                   // second-service Gob
+    // NB See `@fantaptik/socket` for other options.      // second-service Gob
+    plugins : [                                           // second-service Gob
+        // NB Other plugins as needed...                  // second-service Gob
+        SecondAuth,                                       // second-service Gob
+    ],                                                    // second-service Gob
+};                                                        // second-service Gob
+export const secondary = new Socket( secondOptions );     // second-service Gob
+</code></pre>
+</blockquote>
+<blockquote>
+<h4>Using the React Components</h4>
+<p>In your application's <code>App.js</code> or other file:</p>
+<pre class="prettyprint source lang-jsx"><code>import React from 'react';
+
+import { Auth, SecondAuth } from './socket';
+
+const App = props => {
+    return (
+        &lt;div className=&quot;App&quot;>
+            // Page header + navigation content.
+
+            &lt;Auth.React.Guest>
+                &lt;Auth.React.LoginForm uriLogin={&quot;https://myapp.com/login&quot;} uriResume={&quot;https://myapp.com/resume&quot;} />
+            &lt;/Auth.React.Guest>
+
+            &lt;Auth.React.Authenticated>
+                // NB Place components for authenticated user session here.
+
+                // Sample logout button
+                &lt;button onClick={() => Auth.logout()}>Logout&lt;/button>
+            &lt;/Auth.React.Authenticated>
+
+            &lt;SecondAuth.React.Guest>
+                &lt;SecondAuth.React.LoginForm uriLogin={&quot;https://second-service.com/login&quot;} uriResume={&quot;https://second-service.com/resume&quot;} />
+            &lt;/SecondAuth.React.Guest>
+
+            &lt;SecondAuth.React.Authenticated>
+                // NB Place components for authenticated user session here.
+
+                // Sample logout button
+                &lt;button onClick={() => SecondAuth.logout()}>Logout&lt;/button>
+            &lt;/SecondAuth.React.Authenticated>
+
+            // Page footer or other content.
+        &lt;/div>
+    );
+}
+
+export default App;
+</code></pre>
+</blockquote>
 </article>
 
 </section>
@@ -57,7 +204,7 @@
 <br class="clear">
 
 <footer>
-    Documentation generated by <a href="https://github.com/jsdoc3/jsdoc">JSDoc 3.6.5</a> on Tue Sep 08 2020 15:20:10 GMT-0700 (Pacific Daylight Time) using the <a href="https://github.com/clenemt/docdash">docdash</a> theme.
+    Documentation generated by <a href="https://github.com/jsdoc3/jsdoc">JSDoc 3.6.5</a> on Tue Sep 08 2020 16:49:32 GMT-0700 (Pacific Daylight Time) using the <a href="https://github.com/clenemt/docdash">docdash</a> theme.
 </footer>
 
 <script>prettyPrint();</script>

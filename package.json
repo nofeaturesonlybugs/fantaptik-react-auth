@@ -47,6 +47,7 @@
   },
   "peerDependencies": {
     "@fantaptik/core": "^0.1.0",
+    "@fantaptik/socket": "^0.1.0",
     "@fantaptik/react-material": "^0.1.1",
     "@fantaptik/webpack-config": "^0.2.0",
     "materialize-css": "^1.0.0",

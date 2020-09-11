@@ -5,3 +5,5 @@ Simplified authentication for React applications with additional support for @fa
 ```
 npm install @fantaptik/react-auth @fantaptik/core @fantaptik/socket @fantaptik/react-material
 ```
+
+View the jsdocs @ https://nofeaturesonlybugs.github.io/fantaptik-react-auth/

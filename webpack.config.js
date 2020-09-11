@@ -1,7 +1,7 @@
 const path = require( 'path' );
 const { CleanWebpackPlugin } = require( 'clean-webpack-plugin' );
 
-const fantaptikWebpack = require( '@fantaptik/webpack-react' );
+const fantaptikWebpack = require( '@fantaptik/webpack-config' );
 
 module.exports = {
     entry : "./src/index.js",

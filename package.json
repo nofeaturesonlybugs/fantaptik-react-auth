@@ -1,0 +1,59 @@
+{
+  "name": "@fantaptik/react-auth",
+  "version": "0.0.1",
+  "description": "@fantaptik authentication library.",
+  "main": "dist/index.js",
+  "files": [
+    "dist/index.js"
+  ],
+  "scripts": {
+    "jsdoc": "jsdoc -c jsdoc.config.js -R README.md -u tutorials",
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/nofeaturesonlybugs/fantaptik-react-auth.git"
+  },
+  "keywords": [
+    "@fantaptik",
+    "auth",
+    "authentication",
+    "login"
+  ],
+  "author": "Nofeatures Onlybugs",
+  "license": "MIT",
+  "devDependencies": {
+    "@babel/core": "^7.11.5",
+    "@babel/plugin-proposal-class-properties": "^7.10.4",
+    "@babel/preset-env": "^7.11.5",
+    "@babel/preset-react": "^7.10.4",
+    "@fantaptik/webpack-config": "^0.2.0",
+    "axios": "^0.20.0",
+    "babel-loader": "^8.1.0",
+    "clean-webpack-plugin": "^3.0.0",
+    "css-loader": "^4.2.2",
+    "docdash": "^1.2.0",
+    "jsdoc": "^3.6.5",
+    "materialize-css": "^1.0.0",
+    "react": "^16.13.1",
+    "react-dom": "^16.13.1",
+    "react-redux": "^7.2.1",
+    "react-styleguidist": "^11.0.8",
+    "redux": "^4.0.5",
+    "style-loader": "^1.2.1",
+    "webpack": "^4.44.1",
+    "webpack-cli": "^3.3.12",
+    "yalc": "^1.0.0-pre.42"
+  },
+  "peerDependencies": {
+    "@fantaptik/core": "^0.1.0",
+    "@fantaptik/react-material": "^0.1.1",
+    "@fantaptik/webpack-config": "^0.2.0",
+    "materialize-css": "^1.0.0",
+    "react": "^16.13.1",
+    "react-dom": "^16.13.1",
+    "react-redux": "^7.2.1",
+    "redux": "^4.0.5"
+  },
+  "dependencies": {}
+}

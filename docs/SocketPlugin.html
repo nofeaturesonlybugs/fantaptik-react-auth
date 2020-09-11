@@ -1,0 +1,698 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    
+    <meta charset="utf-8">
+    <title>SocketPlugin - Documentation</title>
+    
+    
+    <script src="scripts/prettify/prettify.js"></script>
+    <script src="scripts/prettify/lang-css.js"></script>
+    <!--[if lt IE 9]>
+      <script src="//html5shiv.googlecode.com/svn/trunk/html5.js"></script>
+    <![endif]-->
+    <link type="text/css" rel="stylesheet" href="styles/prettify.css">
+    <link type="text/css" rel="stylesheet" href="styles/jsdoc.css">
+    <script src="scripts/nav.js" defer></script>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+</head>
+<body>
+
+<input type="checkbox" id="nav-trigger" class="nav-trigger" />
+<label for="nav-trigger" class="navicon-button x">
+  <div class="navicon"></div>
+</label>
+
+<label for="nav-trigger" class="overlay"></label>
+
+<nav >
+    
+    <h2><a href="index.html">Home</a></h2><h3>Classes</h3><ul><li><a href="Actions.html">Actions</a><ul class='methods'><li data-type='method'><a href="Actions.html#Close">Close</a></li><li data-type='method'><a href="Actions.html#matches">matches</a></li><li data-type='method'><a href="Actions.html#Open">Open</a></li><li data-type='method'><a href="Actions.html#Reject">Reject</a></li><li data-type='method'><a href="Actions.html#ResumeBegin">ResumeBegin</a></li><li data-type='method'><a href="Actions.html#ResumeEnd">ResumeEnd</a></li></ul></li><li><a href="Gob.html">Gob</a><ul class='methods'><li data-type='method'><a href="Gob.html#SocketPlugin">SocketPlugin</a></li><li data-type='method'><a href="Gob.html#storeToProps">storeToProps</a></li></ul></li><li><a href="SocketPlugin.html">SocketPlugin</a></li></ul><h3>Namespaces</h3><ul><li><a href="ServerApi.html">ServerApi</a><ul class='methods'><li data-type='method'><a href="ServerApi.html#.Authenticate">Authenticate</a></li><li data-type='method'><a href="ServerApi.html#.Close">Close</a></li><li data-type='method'><a href="ServerApi.html#.Resume">Resume</a></li><li data-type='method'><a href="ServerApi.html#.SocketResume">SocketResume</a></li></ul></li></ul><h3>Tutorials</h3><ul><li><a href="tutorial-getting_started.html">Getting Started</a></li><li><a href="tutorial-server_api.html">Server API</a></li><li><a href="tutorial-understanding_gobs.html">Understanding Gobs</a></li></ul><h3>Global</h3><ul><li><a href="global.html#Reducer">Reducer</a></li><li><a href="global.html#ReducerState">ReducerState</a></li></ul>
+</nav>
+
+<div id="main">
+    
+    <h1 class="page-title">SocketPlugin</h1>
+    
+
+    
+
+
+
+
+<section>
+
+<header>
+    
+        <h2>
+        SocketPlugin
+        </h2>
+        
+            <div class="class-description usertext"><p><code>SocketPlugin</code> establishes a common authentication scheme for <code>@fantaptik/Socket</code>.</p>
+<p>See the <strong>Getting Started</strong> tutorial for example usage.</p>
+<blockquote>
+<p><em>Redux</em></p>
+<blockquote>
+<p><code>SocketPlugin</code> subscribes to changes in the Redux store.<br>
+See <a href="global.html#ReducerState">ReducerState</a>'s documentation for details on when a session is <em>authenticated</em> versus a <em>guest</em>.</p>
+</blockquote>
+</blockquote>
+<blockquote>
+<p><em>Authentication</em></p>
+<blockquote>
+<p>When the Redux store is <em>authenticated</em> the socket's <code>connect()</code> method is automatically called.<br>
+The <code>onconnect()</code> handler verifies the store's session values with the server -- if this step fails
+the store is returned to <em>guest</em> mode.</p>
+</blockquote>
+</blockquote>
+<blockquote>
+<p><em>Guest</em></p>
+<blockquote>
+<p>Calling <code>SocketPlugin</code>'s <code>logout()</code> method sends a message to the server to end the session.  If successful the store
+is returned to <em>guest</em> mode.</p>
+</blockquote>
+<blockquote>
+<p>Whenever the store changes from <em>authenticated</em> to <em>guest</em> the <code>Socket</code>'s <code>stop()</code> method is called to prevent
+the <code>Socket</code> from continuously trying to connect to the server when authentication is guaranteed to fail.</p>
+</blockquote>
+</blockquote>
+<blockquote>
+<p><em>Automatic Session End</em></p>
+<blockquote>
+<p><code>SocketPlugin</code>'s <code>ondata()</code> handler inspects incoming messages for an appropriate <em>session-end</em>
+message.  When received the store is returned to <em>guest</em> mode.</p>
+</blockquote>
+<blockquote>
+<p>Use this feature to cleanly stop instances of <code>Socket</code> in connected clients when:</p>
+<blockquote>
+<ul>
+<li>A single session is ended by calling <code>logout()</code> as described above; i.e. one browser tab
+calls <code>logout()</code>, the server notifies all other <code>Socket</code>s using the same session, and other browser
+tabs will enter <em>guest</em> mode.</li>
+</ul>
+</blockquote>
+</blockquote>
+<blockquote>
+<blockquote>
+<ul>
+<li>When the server is shutting down and session data will not be remembered when it starts again.</li>
+</ul>
+</blockquote>
+</blockquote>
+</blockquote>
+<blockquote>
+<p><em>React</em></p>
+<blockquote>
+<p><code>SocketPlugin</code>'s <code>React</code> property is a shortcut to the associated <code>Gob.React</code> property and provided
+for convenience.</p>
+</blockquote>
+</blockquote>
+<blockquote>
+<p><em>Multiple Sockets</em></p>
+<blockquote>
+<p>Multiple instances of <code>Socket</code> can use the same store however each <code>Socket</code> needs its own
+instance of <code>SocketPlugin</code>.</p>
+</blockquote>
+<blockquote>
+<p>Since <code>SocketPlugin</code> calls <code>connect()</code> and <code>stop()</code> on the <code>Socket</code> instance reactively to changes in the store
+it is sufficient to call <code>logout()</code> on a single <code>SocketPlugin</code> instance to stop all <code>Socket</code>s.  Similarly setting
+the store to <em>authenticated</em> is sufficient to connect and authenticate all <code>Socket</code>s as well.</p>
+</blockquote>
+</blockquote>
+<blockquote>
+<p><em>Multiple Servers</em></p>
+<blockquote>
+<p>The common use case is for an application to connect and authenticate to a single server.  The types exported
+by this package are ideal for this case.</p>
+</blockquote>
+<blockquote>
+<p>Authenticating with multiple servers is possible with the use of <code>Gob</code>s.  See the <strong>Understanding Gobs</strong> tutorial
+for details.</p>
+</blockquote>
+</blockquote></div>
+        
+    
+</header>
+
+<article>
+    
+        <div class="container-overview">
+        
+            
+
+    
+    <h2>Constructor</h2>
+    
+
+    <h4 class="name" id="SocketPlugin"><span class="type-signature"></span>new SocketPlugin<span class="signature">(opts)</span><span class="type-signature"></span></h4>
+
+    
+
+
+
+
+<dl class="details">
+
+    
+    <dt class="tag-source">Source:</dt>
+    <dd class="tag-source"><ul class="dummy"><li>
+        <a href="SocketPlugin.js.html">SocketPlugin.js</a>, <a href="SocketPlugin.js.html#line63">line 63</a>
+    </li></ul></dd>
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+</dl>
+
+
+
+
+
+<div class="description usertext">
+    <p>Create a new <code>SocketPlugin</code> instance that will attempt to resume our session with the server.</p>
+</div>
+
+
+
+
+
+
+
+
+
+
+
+    <h5>Parameters:</h5>
+    
+
+<table class="params">
+    <thead>
+    <tr>
+        
+        <th>Name</th>
+        
+
+        <th>Type</th>
+
+        
+
+        
+
+        <th class="last">Description</th>
+    </tr>
+    </thead>
+
+    <tbody>
+    
+
+        <tr>
+            
+                <td class="name"><code>opts</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">Object</span>
+
+
+            
+            </td>
+
+            
+
+            
+
+            <td class="description last"><p>Options for <code>SocketPlugin</code>.</p>
+                <h6>Properties</h6>
+                
+
+<table class="params">
+    <thead>
+    <tr>
+        
+        <th>Name</th>
+        
+
+        <th>Type</th>
+
+        
+
+        
+
+        <th class="last">Description</th>
+    </tr>
+    </thead>
+
+    <tbody>
+    
+
+        <tr>
+            
+                <td class="name"><code>dispatch</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">func</span>
+
+
+            
+            </td>
+
+            
+
+            
+
+            <td class="description last"><p>The dispatch function for the store.</p></td>
+        </tr>
+
+    
+
+        <tr>
+            
+                <td class="name"><code>gob</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type"><a href="Gob.html">Gob</a></span>
+
+
+            
+            </td>
+
+            
+
+            
+
+            <td class="description last"><p><code>Gob</code> instance <code>SocketPlugin</code> is attached to.</p></td>
+        </tr>
+
+    
+
+        <tr>
+            
+                <td class="name"><code>session</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type"><a href="Session.html">Session</a></span>
+
+
+            
+            </td>
+
+            
+
+            
+
+            <td class="description last"><p><code>Session</code> instance <code>SocketPlugin</code> subscribes to.</p></td>
+        </tr>
+
+    
+    </tbody>
+</table>
+
+            </td>
+        </tr>
+
+    
+    </tbody>
+</table>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+        
+        </div>
+    
+
+    
+
+    
+
+    
+    
+    
+
+     
+
+    
+
+    
+        <h3 class="subsection-title">Members</h3>
+
+        
+            
+<h4 class="name" id="destroy"><span class="type-signature"></span>destroy<span class="type-signature"></span></h4>
+
+
+
+
+
+<dl class="details">
+
+    
+    <dt class="tag-source">Source:</dt>
+    <dd class="tag-source"><ul class="dummy"><li>
+        <a href="SocketPlugin.js.html">SocketPlugin.js</a>, <a href="SocketPlugin.js.html#line96">line 96</a>
+    </li></ul></dd>
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+</dl>
+
+
+
+
+
+<div class="description usertext">
+    <p><code>destroy</code> cleans up the <code>SocketPlugin</code> and prevents it from reacting to changes in the Redux store
+or events on the <code>Socket</code>.</p>
+</div>
+
+
+
+
+
+
+
+
+        
+            
+<h4 class="name" id="logout"><span class="type-signature"></span>logout<span class="type-signature"></span></h4>
+
+
+
+
+
+<dl class="details">
+
+    
+    <dt class="tag-source">Source:</dt>
+    <dd class="tag-source"><ul class="dummy"><li>
+        <a href="SocketPlugin.js.html">SocketPlugin.js</a>, <a href="SocketPlugin.js.html#line106">line 106</a>
+    </li></ul></dd>
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+</dl>
+
+
+
+
+
+<div class="description usertext">
+    <p><code>logout</code> sends a logout message on the <code>Socket</code> to end the user session.  If successful the Redux store
+will be set to <em>guest</em>.</p>
+</div>
+
+
+
+
+
+
+
+
+        
+            
+<h4 class="name" id="React"><span class="type-signature"></span>React<span class="type-signature"> :<a href="global.html#Components">Components</a></span></h4>
+
+
+
+
+
+<dl class="details">
+
+    
+    <dt class="tag-source">Source:</dt>
+    <dd class="tag-source"><ul class="dummy"><li>
+        <a href="SocketPlugin.js.html">SocketPlugin.js</a>, <a href="SocketPlugin.js.html#line145">line 145</a>
+    </li></ul></dd>
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+</dl>
+
+
+
+
+
+<div class="description usertext">
+    <p><code>React</code> is a set of Redux components attached to the <code>store</code>.</p>
+</div>
+
+
+
+    <h5>Type:</h5>
+    <ul>
+        <li>
+            
+<span class="param-type"><a href="global.html#Components">Components</a></span>
+
+
+        </li>
+    </ul>
+
+
+
+
+
+
+        
+            
+<h4 class="name" id="Socket"><span class="type-signature"></span>Socket<span class="type-signature"> :Socket</span></h4>
+
+
+
+
+
+<dl class="details">
+
+    
+    <dt class="tag-source">Source:</dt>
+    <dd class="tag-source"><ul class="dummy"><li>
+        <a href="SocketPlugin.js.html">SocketPlugin.js</a>, <a href="SocketPlugin.js.html#line154">line 154</a>
+    </li></ul></dd>
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+</dl>
+
+
+
+
+
+<div class="description usertext">
+    <p><code>Socket</code> is the <code>Socket</code> instance this plugin is attached to.</p>
+</div>
+
+
+
+    <h5>Type:</h5>
+    <ul>
+        <li>
+            
+<span class="param-type">Socket</span>
+
+
+        </li>
+    </ul>
+
+
+
+
+
+
+        
+    
+
+    
+
+    
+
+    
+</article>
+
+</section>
+
+
+
+
+    
+    
+</div>
+
+<br class="clear">
+
+<footer>
+    Documentation generated by <a href="https://github.com/jsdoc3/jsdoc">JSDoc 3.6.5</a> on Wed Sep 09 2020 11:15:50 GMT-0700 (Pacific Daylight Time) using the <a href="https://github.com/clenemt/docdash">docdash</a> theme.
+</footer>
+
+<script>prettyPrint();</script>
+<script src="scripts/polyfill.js"></script>
+<script src="scripts/linenumber.js"></script>
+
+
+
+</body>
+</html>

@@ -1,0 +1,235 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    
+    <meta charset="utf-8">
+    <title>Actions.js - Documentation</title>
+    
+    
+    <script src="scripts/prettify/prettify.js"></script>
+    <script src="scripts/prettify/lang-css.js"></script>
+    <!--[if lt IE 9]>
+      <script src="//html5shiv.googlecode.com/svn/trunk/html5.js"></script>
+    <![endif]-->
+    <link type="text/css" rel="stylesheet" href="styles/prettify.css">
+    <link type="text/css" rel="stylesheet" href="styles/jsdoc.css">
+    <script src="scripts/nav.js" defer></script>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+</head>
+<body>
+
+<input type="checkbox" id="nav-trigger" class="nav-trigger" />
+<label for="nav-trigger" class="navicon-button x">
+  <div class="navicon"></div>
+</label>
+
+<label for="nav-trigger" class="overlay"></label>
+
+<nav >
+    
+    <h2><a href="index.html">Home</a></h2><h3>Classes</h3><ul><li><a href="Actions.html">Actions</a><ul class='methods'><li data-type='method'><a href="Actions.html#Close">Close</a></li><li data-type='method'><a href="Actions.html#matches">matches</a></li><li data-type='method'><a href="Actions.html#Open">Open</a></li><li data-type='method'><a href="Actions.html#Reject">Reject</a></li><li data-type='method'><a href="Actions.html#ResumeBegin">ResumeBegin</a></li><li data-type='method'><a href="Actions.html#ResumeEnd">ResumeEnd</a></li></ul></li><li><a href="Gob.html">Gob</a><ul class='methods'><li data-type='method'><a href="Gob.html#SocketPlugin">SocketPlugin</a></li><li data-type='method'><a href="Gob.html#storeToProps">storeToProps</a></li></ul></li><li><a href="SocketPlugin.html">SocketPlugin</a></li></ul><h3>Namespaces</h3><ul><li><a href="ServerApi.html">ServerApi</a><ul class='methods'><li data-type='method'><a href="ServerApi.html#.Authenticate">Authenticate</a></li><li data-type='method'><a href="ServerApi.html#.Close">Close</a></li><li data-type='method'><a href="ServerApi.html#.Resume">Resume</a></li><li data-type='method'><a href="ServerApi.html#.SocketResume">SocketResume</a></li></ul></li></ul><h3>Tutorials</h3><ul><li><a href="tutorial-getting_started.html">Getting Started</a></li><li><a href="tutorial-server_api.html">Server API</a></li><li><a href="tutorial-understanding_gobs.html">Understanding Gobs</a></li></ul><h3>Global</h3><ul><li><a href="global.html#Reducer">Reducer</a></li><li><a href="global.html#ReducerState">ReducerState</a></li></ul>
+</nav>
+
+<div id="main">
+    
+    <h1 class="page-title">Actions.js</h1>
+    
+
+    
+
+
+
+    
+    <section>
+        <article>
+            <pre class="prettyprint source linenums"><code>import { MODULE_NAME, ReduxKey } from './consts';
+
+/**
+ * `Actions` provides factory methods for creating the actions to dispatch to the Redux store.
+ * 
+ * The `Types` member can be used to create your own reducer aware of `@fantaptik/react-auth` actions.  
+ * 
+ * **Important**  You only need to use an instance of `Actions` when creating your own reducer aware
+ * of the actions dispatched by this package.  In that case you should not instantiate `Actions` yourself --
+ * instead perform one of the following:  
+ *  1. Use the globally exported `Actions` instance; if you did not instantiate any `Gob` instances this is probably
+ * what you want:
+ *  > ```js
+ *  > import { Actions } from '@fantaptik/react-auth';
+ *  > console.log( Actions.Types );
+ *  > // Create your own reducer here and switch off of `Actions.Types`
+ *  > ```  
+ *  2. Create an instance of `Gob` and use the `Actions` property:
+ *  > ```js
+ *  > import { Gob } from '@fantaptik/react-auth';
+ *  > const slice = new Gob( 'slice-name' );
+ *  > console.log( slice.Actions.Types );
+ *  > // Create your own reducer here and switch off of `slice.Actions.Types`
+ *  > // NB: Your reducer should also check that `slice.Actions.matches( action ) === true`
+ *  > ```  
+ *  > See the **Understanding Gobs** tutorial for extended information.  
+ */
+class Actions {
+    /**
+     * 
+     * @param {string} id Unique identifier shared by a `Gob`.
+     */
+    constructor( id ) {
+        //
+        // Privatize properties.
+        this.props = {
+            id,
+            redux : {
+                [ReduxKey] : {
+                    id,
+                }
+            },
+            types : {
+                Close               : MODULE_NAME + '/close',
+                Open                : MODULE_NAME + '/open',
+                Reject              : MODULE_NAME + '/reject',
+                ResumeBegin         : MODULE_NAME + '/resume/begin',
+                ResumeEnd           : MODULE_NAME + '/resume/end',
+            },
+        };
+    }
+
+    /**
+     * `matches` accepts an `action` object and returns `true` if it matches the action generators from this
+     * instance.  
+     * 
+     * **Note** `action.type` is not checked as it is assumed the reducer will be checking that property.  
+     * 
+     * @method
+     * @param {Object} action The Redux action.
+     * @returns {boolean}
+     */
+    matches = ( action ) => {
+        return action[ ReduxKey ] &amp;&amp; action[ ReduxKey ].id === this.props.id;
+    }
+
+    /**
+     * `Types` returns the `action.type` strings that this instance dispatches to the Redux store.
+     * 
+     * @readonly
+     * @type {Object}
+     * @property {string} Close
+     * @property {string} Open
+     * @property {string} Reject
+     * @property {string} ResumeBegin
+     * @property {string} ResumeEnd
+     */
+    get Types() {
+        return this.props.types;
+    }
+
+    /**
+     * Creates the *Close* reducer action.  
+     * 
+     * This action sets the reducer to *guest*.
+     * 
+     * @method
+     * @returns {Object}
+     */
+    Close = () => {
+        return {
+            ...this.props.redux,
+            type : this.Types.Close,
+        };
+    }
+
+    /**
+     * Creates the *Open* reducer action.
+     * 
+     * This action sets the reducer to *authenticated*; all `SocketPlugin` instances will attempt to `connect()`
+     * to the server.
+     * 
+     * @method
+     * @param {string} session The `session-id` value.
+     * @param {Object} user The opaque `user` object received when authenticating with the server.
+     * @param {string} username The `username` that was used to authenticate.
+     * @returns {Object}
+     */
+    Open = ( session, user, username ) => {
+        return {
+            ...this.props.redux,
+            type : this.Types.Open,
+            session,
+            user,
+            username,
+        };
+    }
+
+    /**
+     * Creates the `Reject` reducer action.
+     * 
+     * This action indicates a `SocketPlugin` attempted to verify itself with the server and was rejected.  Sets
+     * the reducer to *guest*.
+     * 
+     * @method
+     * @returns {Object}
+     */
+    Reject = () => {
+        return {
+            ...this.props.redux,
+            type : this.Types.Reject,
+        };
+    }
+    
+    /**
+     * Creates the `ResumeBegin` reducer action.
+     * 
+     * This action is dispatched prior to an HTTP-POST session resume attempt.
+     * 
+     * @method
+     * @returns {Object}
+     */
+    ResumeBegin = () => {
+        return {
+            ...this.props.redux,
+            type : this.Types.ResumeBegin,
+        };
+    }
+
+    /**
+     * Creates the `ResumeEnd` reducer action.
+     * 
+     * This action is dispatched after an HTTP-POST session resume attempt has completed.
+     * 
+     * @method
+     * @returns {Object}
+     */
+    ResumeEnd = () => {
+        return {
+            ...this.props.redux,
+            type : this.Types.ResumeEnd,
+        };
+    }
+
+}
+
+export default Actions;</code></pre>
+        </article>
+    </section>
+
+
+
+
+    
+    
+</div>
+
+<br class="clear">
+
+<footer>
+    Documentation generated by <a href="https://github.com/jsdoc3/jsdoc">JSDoc 3.6.5</a> on Wed Sep 09 2020 11:15:50 GMT-0700 (Pacific Daylight Time) using the <a href="https://github.com/clenemt/docdash">docdash</a> theme.
+</footer>
+
+<script>prettyPrint();</script>
+<script src="scripts/polyfill.js"></script>
+<script src="scripts/linenumber.js"></script>
+
+
+
+</body>
+</html>
